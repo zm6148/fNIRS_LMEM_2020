@@ -16,7 +16,7 @@ full_data <- read.csv(file=sprintf(paste(dirname(rstudioapi::getSourceEditorCont
 
 # build data frame
 names(full_data) <- c("SID", "hemisphere", "cortical_structure", "roi_code", "masker_configuration", 
-                      "L_R_hand", "R_audio", "L_audio",
+                      "L_R_hand", "R_ear_PTA", "L_ear_PTA",
                       "fnirs_data", "fnirs_data_RC_HbO",
                       "HRF_HbO_1", "HRF_HbO_2", 
                       "HRF_HbO_first_d_1", "HRF_HbO_first_d_2", 
@@ -69,8 +69,8 @@ LMEM_model <- lmer(fnirs_data ~
                          hemisphere +
                          cortical_structure +
                          masker_configuration +
-                         R_audio +
-                         L_audio +
+                         R_ear_PTA +
+                         L_ear_PTA +
                          # two-way interactions
                          cortical_structure:masker_configuration +
                          hemisphere:masker_configuration +
