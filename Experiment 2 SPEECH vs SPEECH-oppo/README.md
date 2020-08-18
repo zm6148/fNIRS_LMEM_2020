@@ -49,6 +49,6 @@ To start LMEM analysis, run the R script **exp2_LMEM_analysis.R**. It will read 
 1. The plot of LMEM model predicted data overlaid with raw recording as shown in Figure 2.
 2. The percentage by which reference channel attributed to the total activation levels in the LMEM fits, as calculated via the area under the fitted curve with vs without β6 and β7.
 3. LMEM predicted activation level defined as HbO peak during task block to be used later for linear fit using MATLAB .
-4. LMEM fitting results as detailed in Table I.
+4. LMEM fitting results as detailed in Table II.
 
 To fit a linear model to the vulnerability to masking, measured in behavioral d’, and hemodynamic responses, defined as HbO peak during task block, run the MATLAB script **behavioral_vs_hemodynamic_responses_exp2.m**. It will fit a linear model to the data and generated plots as shown in figure 4.
