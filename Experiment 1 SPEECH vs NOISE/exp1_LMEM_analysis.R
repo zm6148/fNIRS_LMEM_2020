@@ -137,7 +137,7 @@ ggplot(df_LMEM_summary_HbO)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         plot.margin = margin(2,.5,2,.5, "cm")) +
-  ggtitle("LMEM fits overlay with raw recordings (HbO)") + 
+  ggtitle("LMEM fits and raw recordings (HbO)") + 
   facet_grid(. ~ roi_code)
 
 # HbR
@@ -156,7 +156,7 @@ ggplot(df_LMEM_summary_HbR)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         plot.margin = margin(2,.5,2,.5, "cm")) +
-  ggtitle("LMEM fits overlay with raw recordings (HbR)") + 
+  ggtitle("LMEM fits and raw recordings (HbR)") + 
   facet_grid(. ~ roi_code)
 
 # model goodness of fit measured in R2 

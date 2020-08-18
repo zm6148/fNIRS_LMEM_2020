@@ -8,6 +8,7 @@ library(zoo)
 # First remove all objects
 rm(list=ls())
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 # Load the files
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 source(paste(dirname(rstudioapi::getSourceEditorContext()$path), '/functions/get_pvals.R', sep = ""))
@@ -26,6 +27,7 @@ names(full_data) <- c("SID", "hemisphere", "cortical_structure", "roi_code", "ma
                       "HRF_HbR_first_d_1", "HRF_HbR_first_d_2", 
                       "HRF_HbR_second_d_1", "HRF_HbR_second_d_2",
                       "HbO_HbR")
+
 
 # convert to factors
 full_data$SID <- as.factor(full_data$SID)
@@ -46,17 +48,18 @@ full_data$HRF_HbR_first_d_2 <- rescale(full_data$HRF_HbR_first_d_2, to = c(-1, 1
 full_data$HRF_HbR_second_d_1 <- rescale(full_data$HRF_HbR_second_d_1, to = c(-1, 1))
 full_data$HRF_HbR_second_d_2 <- rescale(full_data$HRF_HbR_second_d_2, to = c(-1, 1))
 
+
 # combine 2 masker_configuration and build model
 # HbO
-full_data$new_HRF_HbO = full_data$HRF_HbO_1 + full_data$HRF_HbO_2
+full_data$new_HRF_HbO = full_data$HRF_HbO_1 +full_data$HRF_HbO_2
 full_data$new_HRF_HbO_first_d = full_data$HRF_HbO_first_d_1 + full_data$HRF_HbO_first_d_2
 full_data$new_HRF_HbO_second_d = full_data$HRF_HbO_second_d_1 +  full_data$HRF_HbO_second_d_2
 # HbR
-full_data$new_HRF_HbR = full_data$HRF_HbR_1 + full_data$HRF_HbR_2
+full_data$new_HRF_HbR = full_data$HRF_HbR_1 +full_data$HRF_HbR_2
 full_data$new_HRF_HbR_first_d = full_data$HRF_HbR_first_d_1 + full_data$HRF_HbR_first_d_2
 full_data$new_HRF_HbR_second_d = full_data$HRF_HbR_second_d_1 +  full_data$HRF_HbR_second_d_2
 
-# define model
+
 LMEM_model <- lmer(fnirs_data ~
                          # Default effects
                          new_HRF_HbO +
@@ -69,6 +72,7 @@ LMEM_model <- lmer(fnirs_data ~
                          hemisphere +
                          cortical_structure +
                          masker_configuration +
+                         #L_R_hand +
                          R_ear_PTA +
                          L_ear_PTA +
                          # two-way interactions
@@ -90,7 +94,7 @@ LMEM_model <- lmer(fnirs_data ~
                          # Random effects
                          #-----------------------------------#
                          (1 + masker_configuration + cortical_structure + hemisphere|SID),
-                       #-----------------------------------#
+                         #-----------------------------------#
                        data=full_data)
 
 #########################################################################################
@@ -121,7 +125,7 @@ df_LMEM_summary_HbO = df_LMEM_summary[df_LMEM_summary$HbO_HbR == 1, ]
 df_LMEM_summary_HbR = df_LMEM_summary[df_LMEM_summary$HbO_HbR == 2, ] 
 
 # Plot model prediction on top of the real data
-# HbO 
+# HbO
 ggplot(df_LMEM_summary_HbO)+
   aes(x = time, y = fnirs_data, color = masker_configuration)+
   geom_ribbon(aes(ymin = fnirs_data - fnirs_data.se,
@@ -137,7 +141,7 @@ ggplot(df_LMEM_summary_HbO)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         plot.margin = margin(2,.5,2,.5, "cm")) +
-  ggtitle("LMEM fits overlay with raw recordings (HbO)") + 
+  ggtitle("LMEM fits and raw recordings (HbO)") + 
   facet_grid(. ~ roi_code)
 
 # HbR
@@ -156,7 +160,7 @@ ggplot(df_LMEM_summary_HbR)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         plot.margin = margin(2,.5,2,.5, "cm")) +
-  ggtitle("LMEM fits overlay with raw recordings (HbR)") + 
+  ggtitle("LMEM fits and raw recordings (HbR)") + 
   facet_grid(. ~ roi_code)
 
 # model goodness of fit measured in R2 
@@ -209,243 +213,307 @@ d_prime_vs_HbO_peak <- full_data_S_RC%>%
             fnirs_data = round(mean(fnirs_data, na.rm = TRUE),4),
             predicted = mean(predicted))
 
+
 ## loop through all 14 subjets and record max
-## roi_code 1: right STG; 2: left STG; 3: right cIFS; 4: left cIFS
+##roi_code 1: right STG; 2: left STG; 3: right cIFS; 4: left cIFS
 ## masker_configuration 1: speech ; 2: speechoppo
-# masker_configuration 1 speech, HbO, 4 region
+## masker_configuration 1 speech, HbO, 4 region
 # right STG
 peak_R_STG_speech_HbO <- vector()
 d_prime_speech_HbO <- vector()
 R_STG_speech_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 3, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 3, ] 
   
   peak_R_STG_speech_HbO <- c(peak_R_STG_speech_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speech_HbO <- c(d_prime_speech_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   R_STG_speech_HbO <- rbind(R_STG_speech_HbO, d_prime_vs_HbO_peak_HbO$predicted)
 }
+
+
+
 # left STG
 peak_L_STG_speech_HbO <- vector()
 d_prime_speech_HbO <- vector()
 L_STG_speech_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 4, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 4, ] 
   
   peak_L_STG_speech_HbO <- c(peak_L_STG_speech_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speech_HbO <- c(d_prime_speech_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   L_STG_speech_HbO <- rbind(L_STG_speech_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
+
+
 # right cIFS
 peak_R_cIFS_speech_HbO <- vector()
 d_prime_speech_HbO <- vector()
 R_cIFS_speech_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 1, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 1, ] 
   
   peak_R_cIFS_speech_HbO <- c(peak_R_cIFS_speech_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speech_HbO <- c(d_prime_speech_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   R_cIFS_speech_HbO <- rbind(R_cIFS_speech_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
+
 # left cIFS
 peak_L_cIFS_speech_HbO <- vector()
 d_prime_speech_HbO <- vector()
 L_cIFS_speech_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 2, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 2, ] 
   
   peak_L_cIFS_speech_HbO <- c(peak_L_cIFS_speech_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speech_HbO<- c(d_prime_speech_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   L_cIFS_speech_HbO <- rbind(L_cIFS_speech_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
 
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # masker_configuration 2 speech, HbO, 4 region
 # right STG
 peak_R_STG_speechoppo_HbO <- vector()
 d_prime_speechoppo_HbO <- vector()
 R_STG_speechoppo_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 3, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 3, ] 
   
   peak_R_STG_speechoppo_HbO <- c(peak_R_STG_speechoppo_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speechoppo_HbO <- c(d_prime_speechoppo_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   R_STG_speechoppo_HbO <- rbind(R_STG_speechoppo_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
+
+
 # left STG
 peak_L_STG_speechoppo_HbO <- vector()
 d_prime_speechoppo_HbO <- vector()
 L_STG_speechoppo_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 4, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 4, ] 
   
   peak_L_STG_speechoppo_HbO <- c(peak_L_STG_speechoppo_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speechoppo_HbO <- c(d_prime_speechoppo_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   L_STG_speechoppo_HbO <- rbind(L_STG_speechoppo_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
+
+
+
 # right cIFS
 peak_R_cIFS_speechoppo_HbO <- vector()
 d_prime_speechoppo_HbO <- vector()
 R_cIFS_speechoppo_HbO <-vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 1, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 1, ] 
   
   peak_R_cIFS_speechoppo_HbO <- c(peak_R_cIFS_speechoppo_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speechoppo_HbO <- c(d_prime_speechoppo_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   R_cIFS_speechoppo_HbO <- rbind(R_cIFS_speechoppo_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
+
+
+
 # left cIFS
 peak_L_cIFS_speechoppo_HbO <- vector()
 d_prime_speechoppo_HbO <- vector()
 L_cIFS_speechoppo_HbO <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbO <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 1 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 2, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 2, ] 
   
   peak_L_cIFS_speechoppo_HbO <- c(peak_L_cIFS_speechoppo_HbO, abs(max(d_prime_vs_HbO_peak_HbO$predicted)))
   d_prime_speechoppo_HbO <- c(d_prime_speechoppo_HbO , d_prime_vs_HbO_peak_HbO$d_prime[1])
   L_cIFS_speechoppo_HbO <- rbind(L_cIFS_speechoppo_HbO, d_prime_vs_HbO_peak_HbO$predicted)
+  
 }
 
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # masker_configuration 1 speech, HbR, 4 region
 # right STG
 peak_R_STG_speech_HbR <- vector()
 d_prime_speech_HbR<- vector()
 R_STG_speech_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 3, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 3, ] 
   
   peak_R_STG_speech_HbR <- c(peak_R_STG_speech_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speech_HbR <- c(d_prime_speech_HbR, d_prime_vs_HbO_peak_HbR$d_prime[1])
   R_STG_speech_HbR <- rbind(R_STG_speech_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
+
 # left STG
 peak_L_STG_speech_HbR <- vector()
 d_prime_speech_HbR <- vector
 L_STG_speech_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 4, ] 
-
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 4, ] 
+  
   peak_L_STG_speech_HbR <- c(peak_L_STG_speech_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speech_HbR <- c(d_prime_speech_HbR, d_prime_vs_HbO_peak_HbR$d_prime[1])
   L_STG_speech_HbR <- rbind(L_STG_speech_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
+
 
 # right cIFS
 peak_R_cIFS_speech_HbR <- vector()
 d_prime_speech_HbR <- vector()
 R_cIFS_speech_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 1, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 1, ] 
   
   peak_R_cIFS_speech_HbR <- c(peak_R_cIFS_speech_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speech_HbR <- c(d_prime_speech_HbR , d_prime_vs_HbO_peak_HbR$d_prime[1])
   R_cIFS_speech_HbR <- rbind(R_cIFS_speech_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
 
 # left cIFS
 peak_L_cIFS_speech_HbR <- vector()
 d_prime_speech_HbR <- vector()
 L_cIFS_speech_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 1 &
-                                                 d_prime_vs_HbO_peak$roi_code == 2, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 1 &
+                                                         d_prime_vs_HbO_peak$roi_code == 2, ] 
   
   peak_L_cIFS_speech_HbR <- c(peak_L_cIFS_speech_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speech_HbR <- c(d_prime_speech_HbR , d_prime_vs_HbO_peak_HbR$d_prime[1])
   L_cIFS_speech_HbR <- rbind(L_cIFS_speech_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
 
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # masker_configuration 2 speechoppo, HbO, 4 region
 # right STG
 peak_R_STG_speechoppo_HbR <- vector()
 d_prime_speechoppo_HbR <- vector()
 R_STG_speechoppo_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 3, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 3, ] 
   
   peak_R_STG_speechoppo_HbR <- c(peak_R_STG_speechoppo_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speechoppo_HbR <- c(d_prime_speechoppo_HbR, d_prime_vs_HbO_peak_HbR$d_prime[1])
   R_STG_speechoppo_HbR <- rbind(R_STG_speechoppo_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
 
 # left STG
 peak_L_STG_speechoppo_HbR <- vector()
 d_prime_speechoppo_HbR <- vector()
 L_STG_speechoppo_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 4, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 4, ] 
   
   peak_L_STG_speechoppo_HbR <- c(peak_L_STG_speechoppo_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speechoppo_HbR <- c(d_prime_speechoppo_HbR , d_prime_vs_HbO_peak_HbR$d_prime[1])
   L_STG_speechoppo_HbR <- rbind(L_STG_speechoppo_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
 # right cIFS
 peak_R_cIFS_speechoppo_HbR <- vector()
 d_prime_speechoppo_HbR <- vector()
 R_cIFS_speechoppo_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 1, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 1, ] 
   
   peak_R_cIFS_speechoppo_HbR <- c(peak_R_cIFS_speechoppo_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speechoppo_HbR <- c(d_prime_speechoppo_HbR , d_prime_vs_HbO_peak_HbR$d_prime[1])
   R_cIFS_speechoppo_HbR <- rbind(R_cIFS_speechoppo_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
+
+
 # left cIFS
 peak_L_cIFS_speechoppo_HbR <- vector()
 d_prime_speechoppo_HbR <- vector()
 L_cIFS_speechoppo_HbR <- vector()
 for (subject_ID in c(1:14)){
+  
   d_prime_vs_HbO_peak_HbR <- d_prime_vs_HbO_peak[d_prime_vs_HbO_peak$HbO_HbR == 2 &
-                                                 d_prime_vs_HbO_peak$SID == subject_ID &
-                                                 d_prime_vs_HbO_peak$masker_configuration == 2 &
-                                                 d_prime_vs_HbO_peak$roi_code == 2, ] 
+                                                         d_prime_vs_HbO_peak$SID == subject_ID &
+                                                         d_prime_vs_HbO_peak$masker_configuration == 2 &
+                                                         d_prime_vs_HbO_peak$roi_code == 2, ] 
   
   peak_L_cIFS_speechoppo_HbR <- c(peak_L_cIFS_speechoppo_HbR, abs(max(d_prime_vs_HbO_peak_HbR$predicted)))
   d_prime_speechoppo_HbR <- c(d_prime_speechoppo_HbR , d_prime_vs_HbO_peak_HbR$d_prime[1])
   L_cIFS_speechoppo_HbR <- rbind(L_cIFS_speechoppo_HbR, d_prime_vs_HbO_peak_HbR$predicted)
+  
 }
+
 
 ## save data for analysis
 #trace data
@@ -484,4 +552,3 @@ write.csv(rbind(peak_R_STG_speechoppo_HbR, d_prime_speechoppo_HbR), file = "R_ST
 write.csv(rbind(peak_L_STG_speechoppo_HbR, d_prime_speechoppo_HbR), file = "L_STG_speechoppo_HbR_peak_d.csv")
 write.csv(rbind(peak_R_cIFS_speechoppo_HbR, d_prime_speechoppo_HbR), file = "R_cIFS_speechoppo_HbR_peak_d.csv")
 write.csv(rbind(peak_L_cIFS_speechoppo_HbR, d_prime_speechoppo_HbR), file = "L_cIFS_speechoppo_HbR_peak_d.csv")
-
