@@ -12,9 +12,8 @@ To preprocess the raw fNIRS recordings, MATLAB R2016a or later is required. Addi
 ## Repo directory structure
 
 There are 2 folders named: 
-
-Experiment 1 SPEECH vs NOISE
-Experiment 2 SPEECH vs SPEECH-oppo
+1) **Experiment 1 SPEECH vs NOISE**
+2) **Experiment 2 SPEECH vs SPEECH-oppo**
 
 
 The raw data and analysis code used to generate figures and tables for experiment 1 and 2 are in them respectively. Each folder also has detailed readme on how to process the data and generate results described in the paper. Clone this repository and follow the instructions for experiment 1 and 2.
