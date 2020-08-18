@@ -25,7 +25,7 @@ This folder contains the raw data for experiment 2 (SPEECH vs SPEECH-oppo) as de
 
 **behavioral_vs_hemodynamic_responses_exp2.m** is the MATLAB script to fit and plot a linear model fitted to the vulnerability to masking (measured in behavioral d’) and hemodynamic responses (defined as HbO peak during task block). 
 
-**model only trace exp2** folder has the fNIRS block average data across 14 listeners from 4 regions of interests (ROIs) under 2 conditions (SPEECH vs NOISE)
+**model only trace exp2** folder has the fNIRS block average data across 14 listeners from 4 regions of interests (ROIs) under 2 conditions (SPEECH vs SPEECH-oppo)
 
 **LMEM R data exp2** folder has the pre-processed fNIRS recordings to be fitted using LMEM. 
 
