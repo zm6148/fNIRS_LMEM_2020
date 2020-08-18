@@ -106,7 +106,7 @@ coefs_1
 #########################################################################################
 ## figure 2
 ## plot model predicted trace over real recording
-## roi_code 1: right STG; 2: left STG; 3: right cIFS; 4: left cIFS
+## roi_code 1:E right cIFS; 2:A left cIFS; 3:F rigth STG; 4:B left STG
 ## masker_configuration 1: speech ; 2: speechoppo
 #########################################################################################
 # add fitted valued to data frame
@@ -215,7 +215,7 @@ d_prime_vs_HbO_peak <- full_data_S_RC%>%
 
 
 ## loop through all 14 subjets and record max
-##roi_code 1: right STG; 2: left STG; 3: right cIFS; 4: left cIFS
+##roi_code 1:E right cIFS; 2:A left cIFS; 3:F rigth STG; 4:B left STG
 ## masker_configuration 1: speech ; 2: speechoppo
 ## masker_configuration 1 speech, HbO, 4 region
 # right STG
