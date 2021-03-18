@@ -83,13 +83,6 @@ for index=1:length(files)
     load(new_name);
     disp(base_name);
     
-    % block average at breahhodling part
-    breath_blockAvg = hmrBlockAvg(dc, s_b, t, window_b);
-    
-    % max breath used for normalize latter
-    max_b_HbO = max(abs(mean(breath_blockAvg(:,1,:),3)));
-    max_b_HbR = max(abs(mean(breath_blockAvg(:,2,:),3)));
-    max_b = (max_b_HbO + max_b_HbR)/2;
     
     % loop through ROI 
     for jj = 1 : 4 % 4 regions of interest
@@ -132,6 +125,13 @@ for index=1:length(files)
                 location = ones(size(blk_num_no_gap,1),1) * 2; % STG
         end
         
+        % block average at breahhodling part
+        breath_blockAvg = hmrBlockAvg(dc(:, :, channels), s_b, t, window_b);
+
+        % max breath used for normalize latter
+        max_b_HbO = max(abs(mean(breath_blockAvg(:,1,:),3)));
+        max_b_HbR = max(abs(mean(breath_blockAvg(:,2,:),3)));
+        max_b = (max_b_HbO + max_b_HbR)/2;
         
         % build new dc based on each block pieced togethor
         % piece together observed fnirs data
