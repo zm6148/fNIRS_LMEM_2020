@@ -127,7 +127,7 @@ for index=1:length(files)
         % block average at breahhodling part
         breath_blockAvg = hmrBlockAvg(dc(:, :, channels), s_b, t, window_b);
 
-        % max breath used for normalize latter
+        % max breath used for normalize later
         max_b_HbO = max(abs(mean(breath_blockAvg(:,1,:),3)));
         max_b_HbR = max(abs(mean(breath_blockAvg(:,2,:),3)));
         max_b = (max_b_HbO + max_b_HbR)/2;
