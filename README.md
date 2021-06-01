@@ -1,11 +1,11 @@
 # This repository contains the raw data and data analysis scripts for the paper :"Hemodynamic responses link individual differences in informational masking to the vicinity of superior temporal gyrus"
 
 ## Table of Contents
-1. [Dependents](README.md#Dependents)
+1. [Dependencies](README.md#Dependents)
 1. [Repo directory structure](README.md#Repo-directory-structure)
 1. [Questions?](README.md#questions?)
 
-## Dependents
+## Dependencies
 
 To preprocess the raw fNIRS recordings, MATLAB R2016a or later is required. Additionally, MATLAB toolboxes HOMER2 and spm12 are required (https://homer-fnirs.org/, https://www.fil.ion.ucl.ac.uk/spm/software/spm12/). The folders containing those 2 toolboxes are included in this repository. R 3.4.3 or above is required for running the LMEM model.
 
